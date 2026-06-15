@@ -1,0 +1,38 @@
+[workspace]
+name = "fesom-reconstruction"
+description = "FESOM velocity reconstruction notebook running on Parcels v4 (main)"
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-64", "osx-arm64"]
+
+[tasks]
+# Launch JupyterLab to open fesom_velocity_reconstruction.ipynb
+lab = "jupyter lab"
+# Register the environment as a Jupyter kernel
+kernel = "python -m ipykernel install --user --name fesom-reconstruction --display-name 'Python (fesom-reconstruction)'"
+
+[dependencies]
+python = ">=3.11,<3.14"
+# Scientific stack (compiled libs pulled from conda-forge for clean binaries)
+numpy = ">=2.1.0"
+xarray = ">=2024.5.0"
+uxarray = ">=2026.04.1"
+matplotlib = "*"
+netcdf4 = ">=1.7.2"
+dask = ">=2024.5.1"
+zarr = ">=3"
+pandas = ">=2.2"
+pyarrow = ">=20.0.0"
+polars = ">=1.31.0"
+xgcm = ">=0.9.0"
+cf_xarray = ">=0.8.6"
+cftime = ">=1.6.3"
+pooch = ">=1.8.0"
+tqdm = ">=4.50.0"
+# Notebook tooling
+jupyterlab = "*"
+ipykernel = "*"
+
+[pypi-dependencies]
+# Parcels v4 — installed from the main branch (provides the unstructured /
+# uxarray interpolators and bundled datasets used by the notebook).
+parcels = { git = "https://github.com/OceanParcels/Parcels.git", branch = "main" }
