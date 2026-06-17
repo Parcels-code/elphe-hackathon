@@ -13,7 +13,7 @@ jupyter = "jupyter"
 JUPYTER_CONFIG_DIR = ".jupyter"
 
 [dependencies]
-parcels = { git = "https://github.com/VeckoTheGecko/parcels/", rev = "open_raw_zarr" }
+parcels = { git = "https://github.com/VeckoTheGecko/parcels/", rev = "97c33246409d416a6fce3bf09046e5f282709d82" } # "open_raw_zarr" }
 ipykernel = ">=7.2.0,<8"
 copernicusmarine = ">=2.3.0,<3"
 setuptools = "*"
