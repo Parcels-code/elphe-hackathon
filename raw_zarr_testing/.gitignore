@@ -1,0 +1,4 @@
+**/*.zarr/*
+.DS_Store
+*.parquet
+
