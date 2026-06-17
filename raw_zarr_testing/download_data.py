@@ -1,3 +1,5 @@
+import argparse
+
 import parcels
 import copernicusmarine
 
@@ -19,7 +21,7 @@ DATASET_IDs_BY_GRID: list[tuple[str, Grid]] = [
 DATASET_IDs: list[str] = [list(ids) for ids in DATASET_IDs_BY_GRID]
 
 
-def download_data(**copernicus_kwargs) -> dict[str, xr.Dataset]:
+def download_data(no_compression: bool, **copernicus_kwargs) -> dict[str, xr.Dataset]:
     copernicus_kwargs = (
         dict(
             minimum_longitude=-100,
@@ -58,8 +60,22 @@ def download_data(**copernicus_kwargs) -> dict[str, xr.Dataset]:
         )
 
     for name, ds in datasets.items():
-        ds.drop_encoding().to_zarr(f"{name}.zarr", mode="w")
+        if no_compression:
+            encoding = {
+                v: {"compressors": None} for v in list(ds.data_vars) + list(ds.coords)
+            }
+            ds.drop_encoding().to_zarr(f"{name}.zarr", mode="w", encoding=encoding)
+        else:
+            ds.drop_encoding().to_zarr(f"{name}.zarr", mode="w")
 
 
 if __name__ == "__main__":
-    download_data()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--no-compression",
+        action="store_true",
+        default=False,
+        help="Whether to disable compression when saving the zarr files.",
+    )
+    args = parser.parse_args()
+    download_data(no_compression=args.no_compression)
