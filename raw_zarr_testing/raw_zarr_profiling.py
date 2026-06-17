@@ -32,7 +32,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--load-mode",
-        choices=["zarr", "numpy", "dask"],
+        choices=["zarr", "numpy", "dask", "zarr-with-cache"],
         default="zarr",
         help="How to open physics.zarr for the simulation.",
     )
@@ -45,5 +45,13 @@ if __name__ == "__main__":
         ds.load()
     elif args.load_mode == "dask":
         ds = xr.open_zarr("physics.zarr")
+    elif args.load_mode == "zarr-with-cache":
+        import zarr
+        from zarr.experimental.cache_store import CacheStore
+
+        source_store = zarr.storage.LocalStore("physics.zarr")
+        cache_store = zarr.storage.MemoryStore()
+        store = CacheStore(store=source_store, cache_store=cache_store, max_size=2**30)
+        ds = parcels.open_raw_zarr(store)
 
     run_simulation(ds)
