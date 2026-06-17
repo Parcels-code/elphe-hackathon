@@ -1,0 +1,9 @@
+# Large ICON velocity data — too big for git (288 MB, > GitHub's 100 MB limit).
+# Obtain it separately and place it in this directory to run the notebook.
+levy01_r2b8_P1D_3d_20500101T000000Z_10days.nc
+
+# Notebook / profiling run artifacts
+output-icon.parquet
+icon_profile.json
+__pycache__/
+.ipynb_checkpoints/
