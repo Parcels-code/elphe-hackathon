@@ -1,9 +1,7 @@
 import parcels
 import copernicusmarine
-import argparse
 
 import xarray as xr
-import numpy as np
 
 ModelId = str
 UsedFields = tuple[str, ...]
@@ -19,6 +17,7 @@ DATASET_IDs_BY_GRID: list[tuple[str, Grid]] = [
 ]
 
 DATASET_IDs: list[str] = [list(ids) for ids in DATASET_IDs_BY_GRID]
+
 
 def download_data(**copernicus_kwargs) -> dict[str, xr.Dataset]:
     copernicus_kwargs = (

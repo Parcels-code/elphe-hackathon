@@ -4,6 +4,7 @@ import argparse
 import xarray as xr
 import numpy as np
 
+
 def run_simulation(ds):
     fieldset = parcels.FieldSet.from_sgrid_conventions(ds, mesh="spherical")
 
@@ -14,8 +15,10 @@ def run_simulation(ds):
     )
 
     N = 10_000
-    X, Y = np.meshgrid(np.linspace(-80, -60, int(np.sqrt(N))), np.linspace(-10, 10, int(np.sqrt(N))))
-    pset = parcels.ParticleSet(fieldset=fieldset, lon=X, lat=Y, z=10*np.ones_like(X))
+    X, Y = np.meshgrid(
+        np.linspace(-80, -60, int(np.sqrt(N))), np.linspace(-10, 10, int(np.sqrt(N)))
+    )
+    pset = parcels.ParticleSet(fieldset=fieldset, lon=X, lat=Y, z=10 * np.ones_like(X))
 
     pset.execute(
         kernels=parcels.kernels.AdvectionRK4,
