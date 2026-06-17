@@ -13,11 +13,11 @@ through a real `levy01` (r2b8) eddy-simulation snapshot.
 
 ## Contents
 
-| File | Description |
-| --- | --- |
-| `tutorial_icon.ipynb` | The notebook: open → convert to UGRID → build `FieldSet` → attach reconstruction → advect → plot. |
-| `icon_levy_grid.nc` | ICON grid description, trimmed to the variables uxarray's ICON reader needs (cell/edge/vertex coordinates and cell connectivities). |
-| `pixi.toml` / `pixi.lock` | Reproducible environment (Parcels v4 from `main`, uxarray, the scientific stack, JupyterLab). |
+| File                      | Description                                                                                                                         |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `tutorial_icon.ipynb`     | The notebook: open → convert to UGRID → build `FieldSet` → attach reconstruction → advect → plot.                                   |
+| `icon_levy_grid.nc`       | ICON grid description, trimmed to the variables uxarray's ICON reader needs (cell/edge/vertex coordinates and cell connectivities). |
+| `pixi.toml` / `pixi.lock` | Reproducible environment (Parcels v4 from `main`, uxarray, the scientific stack, JupyterLab).                                       |
 
 `icon_levy_grid.nc` keeps only the 11 grid variables uxarray reads — `vlon`,
 `vlat`, `elon`, `elat`, `clon`, `clat`, `vertex_of_cell`, `edge_of_cell`,
