@@ -30,7 +30,7 @@ def run_simulation(load_mode: str):
         cache_store = zarr.storage.MemoryStore()
         store = CacheStore(store=source_store, cache_store=cache_store, max_size=2**30)
         ds = parcels.open_raw_zarr(store)
-    elif load_mode == "parcels_v3":
+    elif load_mode == "parcels-v3":
         ds = xr.open_dataset("physics.nc")
         parcels_version = 3
 
@@ -90,7 +90,7 @@ if __name__ == "__main__":
             "dask",
             "zarr-with-cache",
             "windowed-array",
-            "parcels_v3",
+            "parcels-v3",
         ],
         default="zarr",
         help="How to open physics.zarr for the simulation.",
