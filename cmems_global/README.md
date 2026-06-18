@@ -74,12 +74,12 @@ row is single-threaded.
 
 | nb    | particles | kernel                         | IO layer                           | run wall                  |
 | ----- | --------- | ------------------------------ | ---------------------------------- | ------------------------- |
-| `02a` | 1,000 ¹   | parcels v4 native (Python)     | plain eager `FieldSet` (`main`)    | 5:11 (311 s)              |
-| `02b` | 1,000,000 | parcels v4 native (Python)     | windowed array (PR #2671)          | 9:00 (540 s)              |
-| `02c` | 1,000,000 | parcels v4 native (Python)     | raw zarr + `CacheStore` (PR #2668) | 16:14 (974 s)             |
+| `02a` | 1,000 ¹   | parcels v4 native (Python)     | plain eager `FieldSet` (`main`)    | 311 s (5:11)              |
+| `02b` | 1,000,000 | parcels v4 native (Python)     | windowed array (PR #2671)          | 540 s (9:00)              |
+| `02c` | 1,000,000 | parcels v4 native (Python)     | raw zarr + `CacheStore` (PR #2668) | 974 s (16:14)             |
 | `02d` | 1,000,000 | **numba** `njit(parallel)` (C) | windowed array                     | **20.7 s** (kernel 7.5 s) |
 | `02e` | 1,000,000 | **numba** `njit(parallel)` (C) | raw zarr + `CacheStore`            | **15.4 s** (kernel 8.2 s) |
-| `02f` | 1,000,000 | parcels **v3 native JIT** (C)  | eager full-load                    | 2:29 (152 s)              |
+| `02f` | 1,000,000 | parcels **v3 native JIT** (C)  | eager full-load                    | 152 s (2:29)              |
 
 ¹ `02a` runs only 1,000 particles, so it is not comparable to the 1M rows; the
 ~5 min is dominated by per-step overhead that is largely independent of particle
