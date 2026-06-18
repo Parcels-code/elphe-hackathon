@@ -21,7 +21,7 @@ def run_simulation(load_mode: str):
     elif load_mode == "numpy":
         ds = xr.open_zarr("physics.zarr")
         ds.load()
-    elif load_mode == "dask" or load_mode == "windowed-array":
+    elif load_mode == "dask" or load_mode == "windowed-arrays":
         ds = xr.open_zarr("physics.zarr")
     elif load_mode == "zarr-with-cache":
         if zarr is None or CacheStore is None:
@@ -41,7 +41,7 @@ def run_simulation(load_mode: str):
 
     if parcels_version == 4:
         fieldset = parcels.FieldSet.from_sgrid_conventions(ds, mesh="spherical")
-        if load_mode == "windowed-array":
+        if load_mode == "windowed-arrays":
             fieldset.to_windowed_arrays()
         pset = parcels.ParticleSet(
             fieldset=fieldset, lon=X, lat=Y, z=10 * np.ones_like(X)
@@ -89,7 +89,7 @@ if __name__ == "__main__":
             "numpy",
             "dask",
             "zarr-with-cache",
-            "windowed-array",
+            "windowed-arrays",
             "parcels-v3",
         ],
         default="zarr",
