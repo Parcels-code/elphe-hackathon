@@ -7,17 +7,16 @@ Explore interactively with `pixi run snakeviz profiles/<name>.prof`.
 
 ## `run_simulation` execution times
 
-| Mode                             | Total script time | `run_simulation` cumtime | `pset.execute` cumtime |
-| -------------------------------- | ----------------- | ------------------------ | ---------------------- |
-| **numpy**                        | 13.9s             | **4.3s**                 | 4.3s                   |
-| **uncompressed-zarr-with-cache** | ??                | **??**                   | 9s                     |
-| **parcels-v3**                   | ??                | **??**                   | 11s                    |
-
-| **windowed-array** | ?? | **??** | 15s |
-| **uncompressed-zarr** | ?? | **??** | 19s |
-| **compressed-zarr-with-cache** | 52.2s | **43.6s** | 43.6s |
-| **compressed-zarr** | 62.5s | **51.7s** | 51.7s |
-| **dask** | 146.9s | **138.5s** | 138.7s |
+| Mode                             | Total script time              | `run_simulation` cumtime | `pset.execute` cumtime |
+| -------------------------------- | ------------------------------ | ------------------------ | ---------------------- | ----- |
+| **numpy**                        | 13.9s                          | **5.1s**                 | 5.1s                   |
+| **uncompressed-zarr-with-cache** | 21.6s                          | **10.8s**                | 10.6s                  |
+| **parcels-v3**                   | 15.0s                          | **11.7s**                | 11.7s                  |
+| **windowed-arrays**              | 24.6s                          | **16.5s**                | 16.5s                  |
+| **uncompressed-zarr**            | 21.3s                          | **21.3s**                | 19s                    |
+| **dask**                         | 134.7s                         | **123.6s**               | 123.6s                 |
+| <!--                             | **compressed-zarr-with-cache** | 52.2s                    | **43.6s**              | 43.6s |
+| **compressed-zarr**              | 62.5s                          | **51.7s**                | 51.7s                  | -->   |
 
 Time outside `run_simulation` (loading + setup) was 8–11s across all modes — the differences are entirely within `pset.execute`.
 
