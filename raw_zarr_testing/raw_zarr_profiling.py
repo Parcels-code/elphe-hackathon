@@ -4,8 +4,35 @@ import argparse
 import xarray as xr
 import numpy as np
 
+try:
+    import zarr
+    from zarr.experimental.cache_store import CacheStore
+except ImportError:
+    zarr = None
+    CacheStore = None
 
-def run_simulation(ds, parcels_version=4):
+
+def run_simulation(load_mode: str):
+
+    parcels_version = 4
+
+    if load_mode == "zarr":
+        ds = parcels.open_raw_zarr("physics.zarr")
+    elif load_mode == "numpy":
+        ds = xr.open_zarr("physics.zarr")
+        ds.load()
+    elif load_mode == "dask" or load_mode == "windowed-array":
+        ds = xr.open_zarr("physics.zarr")
+    elif load_mode == "zarr-with-cache":
+        if zarr is None or CacheStore is None:
+            raise ImportError("zarr or CacheStore is not available")
+        source_store = zarr.storage.LocalStore("physics.zarr")
+        cache_store = zarr.storage.MemoryStore()
+        store = CacheStore(store=source_store, cache_store=cache_store, max_size=2**30)
+        ds = parcels.open_raw_zarr(store)
+    elif load_mode == "parcels_v3":
+        ds = xr.open_dataset("physics.nc")
+        parcels_version = 3
 
     N = 10_000
     X, Y = np.meshgrid(
@@ -14,6 +41,8 @@ def run_simulation(ds, parcels_version=4):
 
     if parcels_version == 4:
         fieldset = parcels.FieldSet.from_sgrid_conventions(ds, mesh="spherical")
+        if load_mode == "windowed-array":
+            fieldset.to_windowed_arrays()
         pset = parcels.ParticleSet(
             fieldset=fieldset, lon=X, lat=Y, z=10 * np.ones_like(X)
         )
@@ -55,30 +84,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--load-mode",
-        choices=["zarr", "numpy", "dask", "zarr-with-cache", "parcels_v3"],
+        choices=[
+            "zarr",
+            "numpy",
+            "dask",
+            "zarr-with-cache",
+            "windowed-array",
+            "parcels_v3",
+        ],
         default="zarr",
         help="How to open physics.zarr for the simulation.",
     )
     args = parser.parse_args()
-    parcels_version = 4
 
-    if args.load_mode == "zarr":
-        ds = parcels.open_raw_zarr("physics.zarr")
-    elif args.load_mode == "numpy":
-        ds = xr.open_zarr("physics.zarr")
-        ds.load()
-    elif args.load_mode == "dask":
-        ds = xr.open_zarr("physics.zarr")
-    elif args.load_mode == "zarr-with-cache":
-        import zarr
-        from zarr.experimental.cache_store import CacheStore
-
-        source_store = zarr.storage.LocalStore("physics.zarr")
-        cache_store = zarr.storage.MemoryStore()
-        store = CacheStore(store=source_store, cache_store=cache_store, max_size=2**30)
-        ds = parcels.open_raw_zarr(store)
-    elif args.load_mode == "parcels_v3":
-        ds = xr.open_dataset("physics.nc")
-        parcels_version = 3
-
-    run_simulation(ds, parcels_version=parcels_version)
+    run_simulation(args.load_mode)
