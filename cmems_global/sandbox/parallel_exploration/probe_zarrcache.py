@@ -1,6 +1,7 @@
 """Probe the open_raw_zarr + CacheStore setup (PR #2668) to learn how to pull
 per-time-level numpy slabs for the JIT kernel without eager full reads."""
 
+import time as _t
 from pathlib import Path
 
 import numpy as np
@@ -32,8 +33,6 @@ print("grid.lon ndim/shape:", np.asarray(grid.lon).ndim, np.asarray(grid.lon).sh
 print("mesh:", grid._mesh)
 
 # try extracting one time level, top 2 depths, as numpy
-import time as _t
-
 t0 = _t.perf_counter()
 slab = np.asarray(Uda.isel(time=0).values)[:2]
 print(

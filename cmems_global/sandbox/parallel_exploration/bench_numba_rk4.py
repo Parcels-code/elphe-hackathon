@@ -129,10 +129,10 @@ def main():
     Uw, Vw = wfs.UV.U.data, wfs.UV.V.data
     levels = sorted(Uw._cache)[:2]
     U2 = np.ascontiguousarray(
-        np.stack([Uw._cache[l] for l in levels]), dtype=np.float32
+        np.stack([Uw._cache[lev] for lev in levels]), dtype=np.float32
     )
     V2 = np.ascontiguousarray(
-        np.stack([Vw._cache[l] for l in levels]), dtype=np.float32
+        np.stack([Vw._cache[lev] for lev in levels]), dtype=np.float32
     )
 
     dt = float(np.timedelta64(2, "h") / np.timedelta64(1, "s"))

@@ -156,10 +156,10 @@ def main():
     levels = sorted(Uw._cache)
     print("resident time levels:", levels)
     U2 = np.ascontiguousarray(
-        np.stack([Uw._cache[l] for l in levels[:2]]), dtype=np.float32
+        np.stack([Uw._cache[lev] for lev in levels[:2]]), dtype=np.float32
     )
     V2 = np.ascontiguousarray(
-        np.stack([Vw._cache[l] for l in levels[:2]]), dtype=np.float32
+        np.stack([Vw._cache[lev] for lev in levels[:2]]), dtype=np.float32
     )
     print("U2 shape:", U2.shape)
 
