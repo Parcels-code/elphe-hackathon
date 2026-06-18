@@ -15,9 +15,9 @@
 # ---
 
 # %% [markdown]
-# # Run Parcels — windowed array (PR #2671), 100k particles
+# # Run Parcels — windowed array (PR #2671), 1M particles
 #
-# Advect 100,000 surface particles using the windowed-array `FieldSet` from
+# Advect 1,000,000 surface particles using the windowed-array `FieldSet` from
 # parcels PR [#2671](https://github.com/parcels-code/Parcels/pull/2671) via
 # `fieldset.to_windowed_arrays(...)`. Kernel:
 # `Pixi: cmems_global (pr2671-windowed-array)`.
@@ -49,7 +49,7 @@ fieldset = parcels.FieldSet.from_sgrid_conventions(ds_fset)
 print(fieldset)
 
 # %%
-n_particles = 100_000
+n_particles = 1_000_000
 
 lon = np.random.uniform(-80, 20, size=(n_particles,))
 lat = np.random.uniform(-35, 40, size=(n_particles,))
@@ -89,17 +89,18 @@ df = parcels.read_particlefile("02b_trajectories.parquet")
 df
 
 # %%
+n_plot = min(50_000, n_particles)
+rng = np.random.default_rng(0)
+plot_ids = rng.choice(n_particles, size=n_plot, replace=False)
+pdf = df.to_pandas()
+_df = pdf[np.isin(pdf["particle_id"].to_numpy(), plot_ids)]
+
 fig, ax = plt.subplots(figsize=(12, 9))
-_df = (
-    df.to_pandas()
-    .sort_values("particle_id")
-    .set_index("particle_id")
-    .loc[range(0, n_particles, 1)]
-)
 scatter = ax.scatter(
     _df["lon"], _df["lat"], c=_df["time"], s=1, alpha=0.5, cmap="viridis_r"
 )
 ax.set_xlabel("Longitude [deg E]")
 ax.set_ylabel("Latitude [deg N]")
+ax.set_title(f"{n_particles:,} particles (native kernel, windowed array); {n_plot:,} shown")
 fig.colorbar(scatter, ax=ax, label="time")
 plt.show()

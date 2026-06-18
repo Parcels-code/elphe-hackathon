@@ -7,3 +7,4 @@ __pycache__/
 
 # regenerable simulation outputs
 *.parquet
+*.zarr/

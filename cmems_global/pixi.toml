@@ -46,6 +46,27 @@ parcels = { git = "https://github.com/parcels-code/Parcels.git", rev = "8136bf54
 [feature.pr2668-open-raw-zarr.pypi-dependencies]
 parcels = { git = "https://github.com/parcels-code/Parcels.git", rev = "97c33246409d416a6fce3bf09046e5f282709d82" }
 
+# parcels v3 release from conda-forge (NOT a pypi-git dep). Used as the native
+# parcels v3 reference env: 02f runs parcels v3's own JIT-compiled C kernel
+# (JITParticle + AdvectionRK4) on an eager-loaded FieldSet (see notebooks/02f).
+#
+# This env is SELF-CONTAINED: the `v3` environment sets `no-default-feature`
+# (below), so it does NOT inherit the shared `default` stack. The reason is zarr:
+# parcels 3.1.0 predates zarr 3 and its `ParticleFile` uses the zarr 2 API, but
+# the shared `default` feature pins `zarr>=3.2.1` for the v4 envs. The two ranges
+# are mutually exclusive, so v3 gets its own stack here with `zarr<3` (and a
+# parcels-3.1-era Python). parcels pulls numpy/scipy/xarray/dask/netcdf4/cftime
+# transitively; we add only the notebook/plot tooling the default would have.
+[feature.v3.dependencies]
+python = ">=3.12,<3.13"
+parcels = ">=3.1,<4"
+zarr = ">=2.18,<3"
+xarray = "*"
+matplotlib = ">=3.8,<4"
+ipykernel = "*"
+jupyterlab = "*"
+jupytext = ">=1.17,<2"
+
 # --- one environment per parcels git rev -----------------------------------
 # Each environment installs into its own prefix and is registered as its own
 # JupyterHub kernel by setup_dkrz_env.sh. The bare `default` environment is
@@ -54,3 +75,6 @@ parcels = { git = "https://github.com/parcels-code/Parcels.git", rev = "97c33246
 main = ["main"]
 pr2671-windowed-array = ["pr2671-windowed-array"]
 pr2668-open-raw-zarr = ["pr2668-open-raw-zarr"]
+# self-contained: excludes the shared `default` stack so it can pin zarr<3 for
+# parcels v3 (see the feature.v3 comment above).
+v3 = { features = ["v3"], no-default-feature = true }

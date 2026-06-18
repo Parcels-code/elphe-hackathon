@@ -14,9 +14,9 @@ jupyter:
     name: cmems_global-pr2668-open-raw-zarr
 ---
 
-# Run Parcels — raw zarr + cache (PR #2668), 1000 particles
+# Run Parcels — raw zarr + cache (PR #2668), 1M particles
 
-Advect 1000 surface particles using the raw-zarr loader from parcels PR
+Advect 1,000,000 surface particles using the raw-zarr loader from parcels PR
 [#2668](https://github.com/parcels-code/Parcels/pull/2668): the CMEMS store is
 read via `parcels.open_raw_zarr` behind a zarr `CacheStore` (in-memory chunk
 cache), bypassing dask. This mirrors the `zarr-with-cache` mode of the
@@ -67,7 +67,7 @@ print(fieldset)
 ```
 
 ```python
-n_particles = 1_000
+n_particles = 1_000_000
 
 lon = np.random.uniform(-80, 20, size=(n_particles,))
 lat = np.random.uniform(-35, 40, size=(n_particles,))
@@ -112,18 +112,19 @@ df
 ```
 
 ```python
+n_plot = min(50_000, n_particles)
+rng = np.random.default_rng(0)
+plot_ids = rng.choice(n_particles, size=n_plot, replace=False)
+pdf = df.to_pandas()
+_df = pdf[np.isin(pdf["particle_id"].to_numpy(), plot_ids)]
+
 fig, ax = plt.subplots(figsize=(12, 9))
-_df = (
-    df.to_pandas()
-    .sort_values("particle_id")
-    .set_index("particle_id")
-    .loc[range(0, n_particles, 1)]
-)
 scatter = ax.scatter(
     _df["lon"], _df["lat"], c=_df["time"], s=1, alpha=0.5, cmap="viridis_r"
 )
 ax.set_xlabel("Longitude [deg E]")
 ax.set_ylabel("Latitude [deg N]")
+ax.set_title(f"{n_particles:,} particles (native kernel, zarr cache IO); {n_plot:,} shown")
 fig.colorbar(scatter, ax=ax, label="time")
 plt.show()
 ```
