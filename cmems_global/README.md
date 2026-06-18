@@ -1,5 +1,8 @@
 # cmems_global
 
+> **Disclaimer:** Most of the code in this directory was written by Claude
+> (Anthropic's Claude Code), under human direction.
+
 CMEMS global ocean experiments driven by [OceanParcels](https://github.com/parcels-code/Parcels).
 
 ## Layout
