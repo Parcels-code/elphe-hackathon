@@ -1,0 +1,6 @@
+*.parquet
+*.zarr/
+
+# local agent/editor state
+.claude/
+__pycache__/
