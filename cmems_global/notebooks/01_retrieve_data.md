@@ -6,10 +6,10 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.3'
+      format_version: "1.3"
       jupytext_version: 1.19.3
   kernelspec:
-    display_name: 'Pixi: cmems_global (main)'
+    display_name: "Pixi: cmems_global (main)"
     language: python
     name: cmems_global-main
 ---

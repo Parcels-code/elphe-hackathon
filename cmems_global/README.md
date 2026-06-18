@@ -39,11 +39,11 @@ copernicusmarine, jupyterlab, …) and layers several pinned **parcels** builds 
 top of it as separate pixi environments. This lets us compare parcels revisions
 side by side from one directory, each as its own JupyterHub kernel.
 
-| pixi env                | parcels rev | SHA (resolved 2026-06-18) |
-| ----------------------- | ----------- | ------------------------- |
-| `main`                  | `parcels-code/Parcels` `main`            | `481decc` |
-| `pr2671-windowed-array` | PR [#2671](https://github.com/parcels-code/Parcels/pull/2671) "Issue 2656 windowed array" head | `8136bf5` |
-| `pr2668-open-raw-zarr`  | PR [#2668](https://github.com/parcels-code/Parcels/pull/2668) "Add `open_raw_zarr` helper" head | `97c3324` |
+| pixi env                | parcels rev                                                                                     | SHA (resolved 2026-06-18) |
+| ----------------------- | ----------------------------------------------------------------------------------------------- | ------------------------- |
+| `main`                  | `parcels-code/Parcels` `main`                                                                   | `481decc`                 |
+| `pr2671-windowed-array` | PR [#2671](https://github.com/parcels-code/Parcels/pull/2671) "Issue 2656 windowed array" head  | `8136bf5`                 |
+| `pr2668-open-raw-zarr`  | PR [#2668](https://github.com/parcels-code/Parcels/pull/2668) "Add `open_raw_zarr` helper" head | `97c3324`                 |
 
 The shared deps live in pixi's implicit `default` feature, which is merged into
 every environment automatically (see `pixi.toml`). The bare `default`

@@ -6,10 +6,10 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.3'
+      format_version: "1.3"
       jupytext_version: 1.19.3
   kernelspec:
-    display_name: 'Pixi: cmems_global (pr2671-windowed-array)'
+    display_name: "Pixi: cmems_global (pr2671-windowed-array)"
     language: python
     name: cmems_global-pr2671-windowed-array
 ---
