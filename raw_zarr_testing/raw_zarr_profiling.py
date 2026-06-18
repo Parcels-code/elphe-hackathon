@@ -5,23 +5,46 @@ import xarray as xr
 import numpy as np
 
 
-def run_simulation(ds):
-    fieldset = parcels.FieldSet.from_sgrid_conventions(ds, mesh="spherical")
-
-    pfile = parcels.ParticleFile(
-        "profiling.parquet",
-        outputdt=np.timedelta64(2, "h"),
-        mode="w",
-    )
+def run_simulation(ds, parcels_version=4):
 
     N = 10_000
     X, Y = np.meshgrid(
         np.linspace(-80, -60, int(np.sqrt(N))), np.linspace(-10, 10, int(np.sqrt(N)))
     )
-    pset = parcels.ParticleSet(fieldset=fieldset, lon=X, lat=Y, z=10 * np.ones_like(X))
+
+    if parcels_version == 4:
+        fieldset = parcels.FieldSet.from_sgrid_conventions(ds, mesh="spherical")
+        pset = parcels.ParticleSet(
+            fieldset=fieldset, lon=X, lat=Y, z=10 * np.ones_like(X)
+        )
+        pfile = parcels.ParticleFile(
+            "profiling.parquet",
+            outputdt=np.timedelta64(2, "h"),
+            mode="w",
+        )
+        kernel = parcels.kernels.AdvectionRK4
+    elif parcels_version == 3:
+        dimensions = {
+            "U": {"lat": "lat", "lon": "lon", "depth": "depth", "time": "time"},
+            "V": {"lat": "lat", "lon": "lon", "depth": "depth", "time": "time"},
+        }
+        variables = {"U": "U", "V": "V"}
+        fieldset = parcels.FieldSet.from_xarray_dataset(
+            ds, dimensions=dimensions, variables=variables, mesh="spherical"
+        )
+
+        pset = parcels.ParticleSet(
+            fieldset=fieldset, lon=X, lat=Y, depth=10 * np.ones_like(X)
+        )
+        pfile = parcels.ParticleFile(
+            "profiling.zarr",
+            pset,
+            outputdt=np.timedelta64(2, "h"),
+        )
+        kernel = parcels.AdvectionRK4
 
     pset.execute(
-        kernels=parcels.kernels.AdvectionRK4,
+        kernel,
         runtime=np.timedelta64(6, "D"),
         dt=np.timedelta64(1, "h"),
         output_file=pfile,
@@ -32,11 +55,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--load-mode",
-        choices=["zarr", "numpy", "dask", "zarr-with-cache"],
+        choices=["zarr", "numpy", "dask", "zarr-with-cache", "parcels_v3"],
         default="zarr",
         help="How to open physics.zarr for the simulation.",
     )
     args = parser.parse_args()
+    parcels_version = 4
 
     if args.load_mode == "zarr":
         ds = parcels.open_raw_zarr("physics.zarr")
@@ -53,5 +77,8 @@ if __name__ == "__main__":
         cache_store = zarr.storage.MemoryStore()
         store = CacheStore(store=source_store, cache_store=cache_store, max_size=2**30)
         ds = parcels.open_raw_zarr(store)
+    elif args.load_mode == "parcels_v3":
+        ds = xr.open_dataset("physics.nc")
+        parcels_version = 3
 
-    run_simulation(ds)
+    run_simulation(ds, parcels_version=parcels_version)
