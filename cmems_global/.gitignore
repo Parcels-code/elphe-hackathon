@@ -1,3 +1,9 @@
 # pixi environments
 .pixi/*
 !.pixi/config.toml
+
+# python bytecode
+__pycache__/
+
+# regenerable simulation outputs
+*.parquet

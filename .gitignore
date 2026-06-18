@@ -1,1 +1,5 @@
 *.parquet
+
+# local agent/editor state
+.claude/
+__pycache__/

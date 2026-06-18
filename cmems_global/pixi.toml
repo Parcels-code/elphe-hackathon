@@ -7,6 +7,11 @@ version = "0.1.0"
 
 [tasks]
 
+# Shared conda dependencies. These live in the implicit `default` feature,
+# which pixi automatically merges into every environment defined below — so
+# each parcels-rev environment gets exactly this stack plus its own parcels
+# build. parcels itself is NOT pinned here on purpose: it is provided per
+# environment via the per-rev features below.
 [dependencies]
 python = ">=3.14.6,<3.15"
 pip = ">=26.1.2,<27"
@@ -21,6 +26,31 @@ netcdf4 = ">=1.7.4,<2"
 ipython = ">=9.14.1,<10"
 jupyterlab = ">=4.5.9,<5"
 ipykernel = ">=7.3.0,<8"
+jupytext = ">=1.17,<2"
 
-[pypi-dependencies]
-parcels = { git = "https://github.com/parcels-code/Parcels.git", rev = "issue-2656-windowed-array" }
+# --- one feature per parcels git rev ---------------------------------------
+# SHAs resolved from github.com/parcels-code/Parcels on 2026-06-18. Pin to
+# full SHAs (not branch/PR refs) so the env is reproducible even after the
+# branch moves. To bump a rev: update the SHA below and re-run
+# setup_dkrz_env.sh (it re-solves the lock and re-registers the kernel).
+
+# parcels-code/Parcels `main` @ 481decc
+[feature.main.pypi-dependencies]
+parcels = { git = "https://github.com/parcels-code/Parcels.git", rev = "481decc20c661da6093b1b4d622f73e5b20a7fa7" }
+
+# PR #2671 "Issue 2656 windowed array" head @ 8136bf5
+[feature.pr2671-windowed-array.pypi-dependencies]
+parcels = { git = "https://github.com/parcels-code/Parcels.git", rev = "8136bf541e769968672a7c4942f1e61acadaaa8b" }
+
+# PR #2668 "Add open_raw_zarr helper" head @ 97c3324
+[feature.pr2668-open-raw-zarr.pypi-dependencies]
+parcels = { git = "https://github.com/parcels-code/Parcels.git", rev = "97c33246409d416a6fce3bf09046e5f282709d82" }
+
+# --- one environment per parcels git rev -----------------------------------
+# Each environment installs into its own prefix and is registered as its own
+# JupyterHub kernel by setup_dkrz_env.sh. The bare `default` environment is
+# intentionally left without parcels (it is neither installed nor registered).
+[environments]
+main = ["main"]
+pr2671-windowed-array = ["pr2671-windowed-array"]
+pr2668-open-raw-zarr = ["pr2668-open-raw-zarr"]
