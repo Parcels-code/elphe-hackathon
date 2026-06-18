@@ -69,7 +69,9 @@ def _uv(U2, V2, lon, lat, depth, x, y, z, tau):
 
 
 @njit(parallel=True, fastmath=True, cache=True)
-def rk4_step(U2, V2, lon, lat, depth, plon, plat, pz, tau0, dtau, dt, out_dlon, out_dlat):
+def rk4_step(
+    U2, V2, lon, lat, depth, plon, plat, pz, tau0, dtau, dt, out_dlon, out_dlat
+):
     npart = plon.shape[0]
     for p in prange(npart):
         x = plon[p]
@@ -87,7 +89,9 @@ def rk4_step(U2, V2, lon, lat, depth, plon, plat, pz, tau0, dtau, dt, out_dlon, 
 
 
 def main():
-    print(f"numba {numba.__version__}  N={N}  threads avail={numba.config.NUMBA_NUM_THREADS}")
+    print(
+        f"numba {numba.__version__}  N={N}  threads avail={numba.config.NUMBA_NUM_THREADS}"
+    )
     ds = xr.open_zarr(Path(DATA_DIR) / "cmems_uovo_2001.zarr")
     fields = {"U": ds["uo"], "V": ds["vo"]}
     ds_fset = parcels.convert.copernicusmarine_to_sgrid(fields=fields)
@@ -118,12 +122,18 @@ def main():
         fieldset.UV[view]
     par_interp = (time.perf_counter() - t) / 3
     par_rk4_proxy = 4 * par_interp
-    print(f"parcels 1 interp={par_interp*1000:.0f} ms -> RK4 proxy (4x)={par_rk4_proxy*1000:.0f} ms")
+    print(
+        f"parcels 1 interp={par_interp * 1000:.0f} ms -> RK4 proxy (4x)={par_rk4_proxy * 1000:.0f} ms"
+    )
 
     Uw, Vw = wfs.UV.U.data, wfs.UV.V.data
     levels = sorted(Uw._cache)[:2]
-    U2 = np.ascontiguousarray(np.stack([Uw._cache[l] for l in levels]), dtype=np.float32)
-    V2 = np.ascontiguousarray(np.stack([Vw._cache[l] for l in levels]), dtype=np.float32)
+    U2 = np.ascontiguousarray(
+        np.stack([Uw._cache[l] for l in levels]), dtype=np.float32
+    )
+    V2 = np.ascontiguousarray(
+        np.stack([Vw._cache[l] for l in levels]), dtype=np.float32
+    )
 
     dt = float(np.timedelta64(2, "h") / np.timedelta64(1, "s"))
     win = float((ds.time.values[1] - t0) / np.timedelta64(1, "s"))
@@ -139,19 +149,51 @@ def main():
     base = None
     for nt in tcs:
         numba.set_num_threads(nt)
-        rk4_step(U2, V2, lon_g, lat_g, depth_g, plon, plat, pz, tau0, dtau, dt, out_dlon, out_dlat)
+        rk4_step(
+            U2,
+            V2,
+            lon_g,
+            lat_g,
+            depth_g,
+            plon,
+            plat,
+            pz,
+            tau0,
+            dtau,
+            dt,
+            out_dlon,
+            out_dlat,
+        )
         t = time.perf_counter()
         for _ in range(3):
-            rk4_step(U2, V2, lon_g, lat_g, depth_g, plon, plat, pz, tau0, dtau, dt, out_dlon, out_dlat)
+            rk4_step(
+                U2,
+                V2,
+                lon_g,
+                lat_g,
+                depth_g,
+                plon,
+                plat,
+                pz,
+                tau0,
+                dtau,
+                dt,
+                out_dlon,
+                out_dlat,
+            )
         st = (time.perf_counter() - t) / 3
         if base is None:
             base = st
-        print(f"  {nt:3d} thr: {st*1000:8.2f} ms/step  ({N/st/1e6:7.2f} M part/s)  "
-              f"scaling={base/st:5.2f}x  vs_parcels_proxy={par_rk4_proxy/st:6.1f}x")
+        print(
+            f"  {nt:3d} thr: {st * 1000:8.2f} ms/step  ({N / st / 1e6:7.2f} M part/s)  "
+            f"scaling={base / st:5.2f}x  vs_parcels_proxy={par_rk4_proxy / st:6.1f}x"
+        )
 
     # sanity: displacement magnitude reasonable (deg over a 2h step)
-    print(f"\nmean |dlon|={np.mean(np.abs(out_dlon)):.4e} deg, "
-          f"max |dlon|={np.max(np.abs(out_dlon)):.4e} deg")
+    print(
+        f"\nmean |dlon|={np.mean(np.abs(out_dlon)):.4e} deg, "
+        f"max |dlon|={np.max(np.abs(out_dlon)):.4e} deg"
+    )
 
 
 if __name__ == "__main__":

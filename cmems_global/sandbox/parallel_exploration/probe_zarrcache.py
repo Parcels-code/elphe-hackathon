@@ -36,13 +36,18 @@ import time as _t
 
 t0 = _t.perf_counter()
 slab = np.asarray(Uda.isel(time=0).values)[:2]
-print("isel(time=0)[:2] shape:", slab.shape, "dtype:", slab.dtype,
-      f"  {(_t.perf_counter()-t0):.2f}s")
+print(
+    "isel(time=0)[:2] shape:",
+    slab.shape,
+    "dtype:",
+    slab.dtype,
+    f"  {(_t.perf_counter() - t0):.2f}s",
+)
 
 # second read should hit the cache
 t0 = _t.perf_counter()
 slab2 = np.asarray(Uda.isel(time=1).values)[:2]
-print("isel(time=1)[:2] shape:", slab2.shape, f"  {(_t.perf_counter()-t0):.2f}s")
+print("isel(time=1)[:2] shape:", slab2.shape, f"  {(_t.perf_counter() - t0):.2f}s")
 
 # direct zarr-array indexing (only needed chunks)?
 raw = ds["uo"]
@@ -51,6 +56,6 @@ try:
     za = raw.data
     t0 = _t.perf_counter()
     s = np.asarray(za[0, 0:2, :, :])
-    print("za[0,0:2] shape:", s.shape, f"  {(_t.perf_counter()-t0):.2f}s")
+    print("za[0,0:2] shape:", s.shape, f"  {(_t.perf_counter() - t0):.2f}s")
 except Exception as e:  # noqa: BLE001
     print("direct zarr index failed:", repr(e))

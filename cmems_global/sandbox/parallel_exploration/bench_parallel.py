@@ -83,31 +83,36 @@ def main():
     per_chunk = N_PARTICLES // N_CHUNKS
     jobs = [(i, per_chunk, 100 + i) for i in range(N_CHUNKS)]
     print(
-        f"N={N_PARTICLES} chunks={N_CHUNKS} ({per_chunk}/chunk) "
-        f"runtime={RUNTIME_DAYS}d"
+        f"N={N_PARTICLES} chunks={N_CHUNKS} ({per_chunk}/chunk) runtime={RUNTIME_DAYS}d"
     )
 
     # serial
     t = time.perf_counter()
     serial_inner = [_advect_chunk(j) for j in jobs]
     serial_wall = time.perf_counter() - t
-    print(f"serial   : wall={serial_wall:6.1f}s  inner={[f'{x:.1f}' for x in serial_inner]}")
+    print(
+        f"serial   : wall={serial_wall:6.1f}s  inner={[f'{x:.1f}' for x in serial_inner]}"
+    )
 
     # threads
     t = time.perf_counter()
     with ThreadPoolExecutor(max_workers=N_CHUNKS) as ex:
         thr_inner = list(ex.map(_advect_chunk, jobs))
     thr_wall = time.perf_counter() - t
-    print(f"threads  : wall={thr_wall:6.1f}s  inner={[f'{x:.1f}' for x in thr_inner]}"
-          f"  speedup_vs_serial={serial_wall/thr_wall:.2f}x")
+    print(
+        f"threads  : wall={thr_wall:6.1f}s  inner={[f'{x:.1f}' for x in thr_inner]}"
+        f"  speedup_vs_serial={serial_wall / thr_wall:.2f}x"
+    )
 
     # processes
     t = time.perf_counter()
     with ProcessPoolExecutor(max_workers=N_CHUNKS) as ex:
         proc_inner = list(ex.map(_advect_chunk, jobs))
     proc_wall = time.perf_counter() - t
-    print(f"processes: wall={proc_wall:6.1f}s  inner={[f'{x:.1f}' for x in proc_inner]}"
-          f"  speedup_vs_serial={serial_wall/proc_wall:.2f}x")
+    print(
+        f"processes: wall={proc_wall:6.1f}s  inner={[f'{x:.1f}' for x in proc_inner]}"
+        f"  speedup_vs_serial={serial_wall / proc_wall:.2f}x"
+    )
 
 
 if __name__ == "__main__":

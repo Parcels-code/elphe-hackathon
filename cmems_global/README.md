@@ -72,14 +72,14 @@ integration loop only, excluding the one-time field load and plotting. The numba
 notebooks (`02d`/`02e`) use all 28 cores via `njit(parallel=True)`; every other
 row is single-threaded.
 
-| nb    | particles  | kernel                          | IO layer                          | run wall            |
-| ----- | ---------- | ------------------------------- | --------------------------------- | ------------------- |
-| `02a` | 1,000 ¹    | parcels v4 native (Python)      | plain eager `FieldSet` (`main`)   | 5:11 (311 s)        |
-| `02b` | 1,000,000  | parcels v4 native (Python)      | windowed array (PR #2671)         | 9:00 (540 s)        |
-| `02c` | 1,000,000  | parcels v4 native (Python)      | raw zarr + `CacheStore` (PR #2668)| 16:14 (974 s)       |
-| `02d` | 1,000,000  | **numba** `njit(parallel)` (C)  | windowed array                    | **20.7 s** (kernel 7.5 s) |
-| `02e` | 1,000,000  | **numba** `njit(parallel)` (C)  | raw zarr + `CacheStore`           | **15.4 s** (kernel 8.2 s) |
-| `02f` | 1,000,000  | parcels **v3 native JIT** (C)   | eager full-load                   | 2:29 (152 s)        |
+| nb    | particles | kernel                         | IO layer                           | run wall                  |
+| ----- | --------- | ------------------------------ | ---------------------------------- | ------------------------- |
+| `02a` | 1,000 ¹   | parcels v4 native (Python)     | plain eager `FieldSet` (`main`)    | 5:11 (311 s)              |
+| `02b` | 1,000,000 | parcels v4 native (Python)     | windowed array (PR #2671)          | 9:00 (540 s)              |
+| `02c` | 1,000,000 | parcels v4 native (Python)     | raw zarr + `CacheStore` (PR #2668) | 16:14 (974 s)             |
+| `02d` | 1,000,000 | **numba** `njit(parallel)` (C) | windowed array                     | **20.7 s** (kernel 7.5 s) |
+| `02e` | 1,000,000 | **numba** `njit(parallel)` (C) | raw zarr + `CacheStore`            | **15.4 s** (kernel 8.2 s) |
+| `02f` | 1,000,000 | parcels **v3 native JIT** (C)  | eager full-load                    | 2:29 (152 s)              |
 
 ¹ `02a` runs only 1,000 particles, so it is not comparable to the 1M rows; the
 ~5 min is dominated by per-step overhead that is largely independent of particle
@@ -98,12 +98,12 @@ copernicusmarine, jupyterlab, …) and layers several pinned **parcels** builds 
 top of it as separate pixi environments. This lets us compare parcels revisions
 side by side from one directory, each as its own JupyterHub kernel.
 
-| pixi env                | parcels rev | SHA (resolved 2026-06-18) |
-| ----------------------- | ----------- | ------------------------- |
-| `main`                  | `parcels-code/Parcels` `main`            | `481decc` |
-| `pr2671-windowed-array` | PR [#2671](https://github.com/parcels-code/Parcels/pull/2671) "Issue 2656 windowed array" head | `8136bf5` |
-| `pr2668-open-raw-zarr`  | PR [#2668](https://github.com/parcels-code/Parcels/pull/2668) "Add `open_raw_zarr` helper" head | `97c3324` |
-| `v3`                    | conda-forge `parcels` v3 release (`>=3.1,<4`) — native v3 JIT reference for `02f`. **Self-contained** (`no-default-feature`): pins `zarr<3` + Python 3.12, the combo parcels 3.1 targets | `3.1.0` (installed) |
+| pixi env                | parcels rev                                                                                                                                                                              | SHA (resolved 2026-06-18) |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| `main`                  | `parcels-code/Parcels` `main`                                                                                                                                                            | `481decc`                 |
+| `pr2671-windowed-array` | PR [#2671](https://github.com/parcels-code/Parcels/pull/2671) "Issue 2656 windowed array" head                                                                                           | `8136bf5`                 |
+| `pr2668-open-raw-zarr`  | PR [#2668](https://github.com/parcels-code/Parcels/pull/2668) "Add `open_raw_zarr` helper" head                                                                                          | `97c3324`                 |
+| `v3`                    | conda-forge `parcels` v3 release (`>=3.1,<4`) — native v3 JIT reference for `02f`. **Self-contained** (`no-default-feature`): pins `zarr<3` + Python 3.12, the combo parcels 3.1 targets | `3.1.0` (installed)       |
 
 The shared deps live in pixi's implicit `default` feature, which is merged into
 every environment automatically (see `pixi.toml`). The bare `default`
@@ -162,7 +162,7 @@ Each notebook pins its kernel in the `.py` frontmatter: `01`/`02a` use
 `cmems_global-main`, `02b`/`02d` use `cmems_global-pr2671-windowed-array`,
 `02c`/`02e` use `cmems_global-pr2668-open-raw-zarr`, and `02f` uses
 `cmems_global-v3` (the conda-forge `parcels` v3 release `3.1.0`). The `02d`/`02e`
-JIT notebooks reach into parcels *private* internals (windowed-array cache; the
+JIT notebooks reach into parcels _private_ internals (windowed-array cache; the
 raw zarr handle), so each pins the exact parcels commit it was verified against
 in a note near the top. `02f` uses only the **public** parcels v3 API
 (`FieldSet.from_xarray_dataset`, `JITParticle`, `AdvectionRK4`, `ParticleFile`),

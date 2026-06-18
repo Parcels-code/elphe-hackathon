@@ -6,10 +6,10 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.3'
+      format_version: "1.3"
       jupytext_version: 1.19.3
   kernelspec:
-    display_name: 'Pixi: cmems_global (pr2671-windowed-array)'
+    display_name: "Pixi: cmems_global (pr2671-windowed-array)"
     language: python
     name: cmems_global-pr2671-windowed-array
 ---
@@ -39,7 +39,7 @@ rectilinear A-grid** of this CMEMS store (1D monotonic `lon`/`lat`/`depth`),
 where the index search is a plain binary search. Kernel:
 `Pixi: cmems_global (pr2671-windowed-array)`.
 
-**Parcels rev pinning.** This notebook reaches into parcels *private* internals
+**Parcels rev pinning.** This notebook reaches into parcels _private_ internals
 (`WindowedArray._ensure` / `._cache` in `parcels._core._windowed_array`) to pull
 the resident NumPy slabs, so it is tied to one exact build. It runs against the
 windowed-array branch (PR #2671) at commit

@@ -90,7 +90,12 @@ print("loaded uo:", ds["uo"].dims, ds["uo"].shape, ds["uo"].dtype)
 fieldset = parcels.FieldSet.from_xarray_dataset(
     ds,
     variables={"U": "uo", "V": "vo"},
-    dimensions={"lon": "longitude", "lat": "latitude", "depth": "depth", "time": "time"},
+    dimensions={
+        "lon": "longitude",
+        "lat": "latitude",
+        "depth": "depth",
+        "time": "time",
+    },
     mesh="spherical",
 )
 print(fieldset)
@@ -191,8 +196,12 @@ obs_p = np.broadcast_to(np.arange(sub.sizes["obs"]), lon_p.shape)
 
 fig, ax = plt.subplots(figsize=(12, 9))
 scatter = ax.scatter(
-    lon_p.reshape(-1), lat_p.reshape(-1), c=obs_p.reshape(-1),
-    s=1, alpha=0.5, cmap="viridis_r",
+    lon_p.reshape(-1),
+    lat_p.reshape(-1),
+    c=obs_p.reshape(-1),
+    s=1,
+    alpha=0.5,
+    cmap="viridis_r",
 )
 ax.set_xlabel("Longitude [deg E]")
 ax.set_ylabel("Latitude [deg N]")

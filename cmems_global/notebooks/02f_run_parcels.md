@@ -6,10 +6,10 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.3'
+      format_version: "1.3"
       jupytext_version: 1.19.3
   kernelspec:
-    display_name: 'Pixi: cmems_global (v3)'
+    display_name: "Pixi: cmems_global (v3)"
     language: python
     name: cmems_global-v3
 ---
@@ -25,7 +25,7 @@ hand-written kernel, no driver loop: the integration is parcels v3's own
 model.
 
 To sit alongside the other notebooks, the fields are **eager-loaded once up
-front** (top two depth levels, *all* time levels) into resident NumPy before
+front** (top two depth levels, _all_ time levels) into resident NumPy before
 the run starts, so there is no IO during integration. Compare to:
 
 - `02b`/`02c`: parcels **v4** native runs.
@@ -34,10 +34,10 @@ the run starts, so there is no IO during integration. Compare to:
 - `02f` (this): parcels **v3 native JIT** (`JITParticle` + `AdvectionRK4`),
   fields eager-loaded once.
 
-**Parcels version.** Unlike `02d`/`02e` (which pin a parcels *git commit* from
+**Parcels version.** Unlike `02d`/`02e` (which pin a parcels _git commit_ from
 a PR branch), this notebook uses the **conda-forge `parcels` v3 release,
 version `3.1.0`** — the build installed in the `v3` pixi environment
-(`parcels >=3.1,<4`). That env is *self-contained* (it does not share the other
+(`parcels >=3.1,<4`). That env is _self-contained_ (it does not share the other
 notebooks' stack): it pins **`zarr<3`** (2.18) and **Python 3.12**, the combo
 parcels 3.1 targets, so the native v3 `ParticleFile` works with no shims. It
 uses only the public v3 API. Kernel: `Pixi: cmems_global (v3)`.

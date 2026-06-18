@@ -65,7 +65,9 @@ data_dir = "/work/bk1450/b381575/elphe-hackathon_data"
 
 # %%
 print("parcels", parcels.__version__)
-print("numba", numba.__version__, "| threads available:", numba.config.NUMBA_NUM_THREADS)
+print(
+    "numba", numba.__version__, "| threads available:", numba.config.NUMBA_NUM_THREADS
+)
 
 # %% [markdown]
 # ## Fields & windowed-array fieldset (IO layer)
@@ -98,14 +100,20 @@ lon_g = np.ascontiguousarray(np.asarray(grid.lon), dtype=np.float64)
 lat_g = np.ascontiguousarray(np.asarray(grid.lat), dtype=np.float64)
 depth_g = np.ascontiguousarray(np.asarray(ds_fields.depth.values[:2]), dtype=np.float64)
 
-assert lon_g.ndim == 1 and lat_g.ndim == 1, "this prototype assumes a 1D (rectilinear) grid"
-assert np.all(np.diff(lon_g) > 0) and np.all(np.diff(lat_g) > 0), "axes must be increasing"
+assert lon_g.ndim == 1 and lat_g.ndim == 1, (
+    "this prototype assumes a 1D (rectilinear) grid"
+)
+assert np.all(np.diff(lon_g) > 0) and np.all(np.diff(lat_g) > 0), (
+    "axes must be increasing"
+)
 
 field_times = ds_fields.time.values
 field_times_s = (field_times - field_times[0]) / np.timedelta64(1, "s")
 n_levels = field_times_s.size
 print(f"grid: lon {lon_g.shape}, lat {lat_g.shape}, depth {depth_g.shape}")
-print(f"field time levels: {n_levels}, spacing ~{np.diff(field_times_s).mean()/3600:.1f} h")
+print(
+    f"field time levels: {n_levels}, spacing ~{np.diff(field_times_s).mean() / 3600:.1f} h"
+)
 
 # %% [markdown]
 # ## JIT kernel — fused AdvectionRK4 over particles
@@ -200,6 +208,7 @@ def rk4_step(u0, u1, v0, v1, lon, lat, depth, plon, plat, pz, tau0, dtau, dt):
 # `ti` and `ti+1` resident (loading from zarr only on a cache miss) and returns
 # the two NumPy slabs. We call it once per window, not once per step.
 
+
 # %%
 def window_slabs(windowed_da, ti):
     """Ensure levels [ti, ti+1] are cached and return them as contiguous NumPy."""
@@ -249,10 +258,19 @@ numba.set_num_threads(numba.config.NUMBA_NUM_THREADS)
 # Warm up: trigger numba compilation once on tiny dummy arrays so the timed loop
 # below measures steady-state kernel cost, not the one-off JIT compile.
 rk4_step(
-    np.zeros((2, 4, 4), np.float32), np.zeros((2, 4, 4), np.float32),
-    np.zeros((2, 4, 4), np.float32), np.zeros((2, 4, 4), np.float32),
-    np.array([0.0, 1.0, 2.0, 3.0]), np.array([0.0, 1.0, 2.0, 3.0]), np.array([0.0, 1.0]),
-    np.array([0.5]), np.array([0.5]), np.array([0.0]), 0.0, 0.1, dt,
+    np.zeros((2, 4, 4), np.float32),
+    np.zeros((2, 4, 4), np.float32),
+    np.zeros((2, 4, 4), np.float32),
+    np.zeros((2, 4, 4), np.float32),
+    np.array([0.0, 1.0, 2.0, 3.0]),
+    np.array([0.0, 1.0, 2.0, 3.0]),
+    np.array([0.0, 1.0]),
+    np.array([0.5]),
+    np.array([0.5]),
+    np.array([0.0]),
+    0.0,
+    0.1,
+    dt,
 )
 
 t = 0.0
@@ -273,7 +291,9 @@ for step in range(n_steps + 1):
         break
 
     # bracketing field levels for the current time
-    ti = int(np.clip(np.searchsorted(field_times_s, t, side="right") - 1, 0, n_levels - 2))
+    ti = int(
+        np.clip(np.searchsorted(field_times_s, t, side="right") - 1, 0, n_levels - 2)
+    )
     if ti != ti_loaded:
         u0, u1 = window_slabs(Uw, ti)
         v0, v1 = window_slabs(Vw, ti)
@@ -285,7 +305,9 @@ for step in range(n_steps + 1):
     dtau = dt / win
 
     k0 = time.perf_counter()
-    dlon, dlat = rk4_step(u0, u1, v0, v1, lon_g, lat_g, depth_g, plon, plat, pz, tau0, dtau, dt)
+    dlon, dlat = rk4_step(
+        u0, u1, v0, v1, lon_g, lat_g, depth_g, plon, plat, pz, tau0, dtau, dt
+    )
     kernel_s += time.perf_counter() - k0
 
     plon = plon + dlon
@@ -306,9 +328,13 @@ wall_s = time.perf_counter() - wall0
 n_kernel_evals = n_steps * n_particles
 print(f"steps={n_steps}  window loads={n_window_loads}  particles={n_particles:,}")
 print(f"wall total      : {wall_s:8.2f} s")
-print(f"  JIT kernel    : {kernel_s:8.2f} s  ({n_kernel_evals/kernel_s/1e6:6.1f} M RK4-steps/s)")
+print(
+    f"  JIT kernel    : {kernel_s:8.2f} s  ({n_kernel_evals / kernel_s / 1e6:6.1f} M RK4-steps/s)"
+)
 print(f"  IO + overhead : {wall_s - kernel_s:8.2f} s")
-print(f"per-step kernel : {kernel_s/n_steps*1000:8.2f} ms  for {n_particles:,} particles")
+print(
+    f"per-step kernel : {kernel_s / n_steps * 1000:8.2f} ms  for {n_particles:,} particles"
+)
 
 # %% [markdown]
 # ## Save trajectories & plot

@@ -29,7 +29,11 @@ lon = np.asarray(grid.lon)
 lat = np.asarray(grid.lat)
 if lon.ndim == 1:
     print("lon monotonic increasing:", bool(np.all(np.diff(lon) > 0)))
-    print("lon spacing uniform? std/mean:", float(np.std(np.diff(lon))), float(np.mean(np.diff(lon))))
+    print(
+        "lon spacing uniform? std/mean:",
+        float(np.std(np.diff(lon))),
+        float(np.mean(np.diff(lon))),
+    )
 if lat.ndim == 1:
     print("lat monotonic increasing:", bool(np.all(np.diff(lat) > 0)))
 print("depth:", np.asarray(ds.depth.values))
@@ -42,4 +46,7 @@ print("type:", type(Uw.data))
 da = Uw.data
 print("has _cache:", hasattr(da, "_cache"))
 print("slab_bytes:", getattr(da, "_slab_bytes", None))
-print("full field nbytes (per time level):", int(np.prod(U.data.shape[1:])) * U.data.dtype.itemsize)
+print(
+    "full field nbytes (per time level):",
+    int(np.prod(U.data.shape[1:])) * U.data.dtype.itemsize,
+)

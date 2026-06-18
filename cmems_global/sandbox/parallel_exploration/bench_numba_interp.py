@@ -109,7 +109,9 @@ def interp_uv(U2, V2, lon, lat, depth, plon, plat, pz, tau, out_u, out_v):
 
 
 def main():
-    print(f"numba {numba.__version__}  N={N}  NUMBA threads avail={numba.config.NUMBA_NUM_THREADS}")
+    print(
+        f"numba {numba.__version__}  N={N}  NUMBA threads avail={numba.config.NUMBA_NUM_THREADS}"
+    )
 
     ds = xr.open_zarr(Path(DATA_DIR) / "cmems_uovo_2001.zarr")
     fields = {"U": ds["uo"], "V": ds["vo"]}
@@ -143,16 +145,22 @@ def main():
     for _ in range(reps):
         u_par, v_par = fieldset.UV[view]
     par_t = (time.perf_counter() - t) / reps
-    print(f"\nparcels XLinear (vectorised): {par_t*1000:8.1f} ms/eval  "
-          f"({N/par_t/1e6:.2f} M part/s)")
+    print(
+        f"\nparcels XLinear (vectorised): {par_t * 1000:8.1f} ms/eval  "
+        f"({N / par_t / 1e6:.2f} M part/s)"
+    )
 
     # ---- extract cached numpy slabs for numba ------------------------------ #
     Uw = wfs.UV.U.data
     Vw = wfs.UV.V.data
     levels = sorted(Uw._cache)
     print("resident time levels:", levels)
-    U2 = np.ascontiguousarray(np.stack([Uw._cache[l] for l in levels[:2]]), dtype=np.float32)
-    V2 = np.ascontiguousarray(np.stack([Vw._cache[l] for l in levels[:2]]), dtype=np.float32)
+    U2 = np.ascontiguousarray(
+        np.stack([Uw._cache[l] for l in levels[:2]]), dtype=np.float32
+    )
+    V2 = np.ascontiguousarray(
+        np.stack([Vw._cache[l] for l in levels[:2]]), dtype=np.float32
+    )
     print("U2 shape:", U2.shape)
 
     # tau for the chosen sample time within the resident window (timedelta ratio)
@@ -187,9 +195,11 @@ def main():
         nt_t = (time.perf_counter() - t) / reps
         if base is None:
             base = nt_t
-        print(f"  {nt:3d} thr: {nt_t*1000:8.2f} ms/eval  "
-              f"({N/nt_t/1e6:7.2f} M part/s)  "
-              f"scaling={base/nt_t:5.2f}x  vs_parcels={par_t/nt_t:6.1f}x")
+        print(
+            f"  {nt:3d} thr: {nt_t * 1000:8.2f} ms/eval  "
+            f"({N / nt_t / 1e6:7.2f} M part/s)  "
+            f"scaling={base / nt_t:5.2f}x  vs_parcels={par_t / nt_t:6.1f}x"
+        )
 
 
 if __name__ == "__main__":

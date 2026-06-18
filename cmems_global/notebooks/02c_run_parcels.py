@@ -115,6 +115,8 @@ scatter = ax.scatter(
 )
 ax.set_xlabel("Longitude [deg E]")
 ax.set_ylabel("Latitude [deg N]")
-ax.set_title(f"{n_particles:,} particles (native kernel, zarr cache IO); {n_plot:,} shown")
+ax.set_title(
+    f"{n_particles:,} particles (native kernel, zarr cache IO); {n_plot:,} shown"
+)
 fig.colorbar(scatter, ax=ax, label="time")
 plt.show()
