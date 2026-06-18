@@ -7,12 +7,17 @@ Explore interactively with `pixi run snakeviz profiles/<name>.prof`.
 
 ## `run_simulation` execution times
 
-| Mode                | Total script time | `run_simulation` cumtime | `pset.execute` cumtime |
-| ------------------- | ----------------- | ------------------------ | ---------------------- |
-| **numpy**           | 13.9s             | **4.3s**                 | 4.3s                   |
-| **zarr-with-cache** | 52.2s             | **43.6s**                | 43.6s                  |
-| **zarr**            | 62.5s             | **51.7s**                | 51.7s                  |
-| **dask**            | 146.9s            | **138.5s**               | 138.7s                 |
+| Mode                             | Total script time | `run_simulation` cumtime | `pset.execute` cumtime |
+| -------------------------------- | ----------------- | ------------------------ | ---------------------- |
+| **numpy**                        | 13.9s             | **4.3s**                 | 4.3s                   |
+| **uncompressed-zarr-with-cache** | ??                | **??**                   | 9s                     |
+| **parcels-v3**                   | ??                | **??**                   | 11s                    |
+
+| **windowed-array** | ?? | **??** | 15s |
+| **uncompressed-zarr** | ?? | **??** | 19s |
+| **compressed-zarr-with-cache** | 52.2s | **43.6s** | 43.6s |
+| **compressed-zarr** | 62.5s | **51.7s** | 51.7s |
+| **dask** | 146.9s | **138.5s** | 138.7s |
 
 Time outside `run_simulation` (loading + setup) was 8–11s across all modes — the differences are entirely within `pset.execute`.
 
