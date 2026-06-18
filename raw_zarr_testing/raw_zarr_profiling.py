@@ -28,7 +28,7 @@ def run_simulation(load_mode: str):
             raise ImportError("zarr or CacheStore is not available")
         source_store = zarr.storage.LocalStore("physics.zarr")
         cache_store = zarr.storage.MemoryStore()
-        store = CacheStore(store=source_store, cache_store=cache_store, max_size=2**30)
+        store = CacheStore(store=source_store, cache_store=cache_store, max_size=2**32)
         ds = parcels.open_raw_zarr(store)
     elif load_mode == "parcels-v3":
         ds = xr.open_dataset("physics.nc")
