@@ -62,6 +62,32 @@ cmems_global/
 The notebooks are jupytext-paired (`.py` / `.md` / `.ipynb`); the `.py`
 (py:percent) is the source of truth — see [Notebooks](#notebooks-jupytext) below.
 
+## Timings — 9-day advection, dt 2 h (one Levante node, 28 cores)
+
+Wall time of the **advection run** in each notebook — the `pset.execute` /
+integration loop only, excluding the one-time field load and plotting. The numba
+notebooks (`02d`/`02e`) use all 28 cores via `njit(parallel=True)`; every other
+row is single-threaded.
+
+| nb    | particles  | kernel                          | IO layer                          | run wall            |
+| ----- | ---------- | ------------------------------- | --------------------------------- | ------------------- |
+| `02a` | 1,000 ¹    | parcels v4 native (Python)      | plain eager `FieldSet` (`main`)   | 5:11 (311 s)        |
+| `02b` | 1,000,000  | parcels v4 native (Python)      | windowed array (PR #2671)         | 9:00 (540 s)        |
+| `02c` | 1,000,000  | parcels v4 native (Python)      | raw zarr + `CacheStore` (PR #2668)| 16:14 (974 s)       |
+| `02d` | 1,000,000  | **numba** `njit(parallel)` (C)  | windowed array                    | **20.7 s** (kernel 7.5 s) |
+| `02e` | 1,000,000  | **numba** `njit(parallel)` (C)  | raw zarr + `CacheStore`           | **15.4 s** (kernel 8.2 s) |
+| `02f` | 1,000,000  | parcels **v3 native JIT** (C)   | eager full-load                   | 2:29 (152 s)        |
+
+¹ `02a` runs only 1,000 particles, so it is not comparable to the 1M rows; the
+~5 min is dominated by per-step overhead that is largely independent of particle
+count (the `np.stack` field re-gather in v4's interpolation).
+
+At 1M particles the parcels **v4 native** Python kernel takes 9–16 min (IO-layer
+dependent); parcels **v3's native C JIT** does it in ~2.5 min; and a **numba
+`njit(parallel)`** kernel across 28 cores brings the advection itself to ~15–21 s
+— the kernel compute alone is ~8 s, the rest is field IO. (Single runs on one
+node; indicative, not rigorous benchmarks.)
+
 ## Pixi environments — one per parcels git rev
 
 This workspace keeps a single shared conda stack (Python, xarray, dask,
