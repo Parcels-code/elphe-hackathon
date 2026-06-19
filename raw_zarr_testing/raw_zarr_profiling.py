@@ -1,5 +1,6 @@
 import argparse
 import cProfile
+from pathlib import Path
 import pstats
 
 import xarray as xr
@@ -16,12 +17,14 @@ except ImportError:
 
 
 def profile_execution_time(load_mode: str, compression_mode: str):
-    report_name = f"prof_time_{load_mode}_{compression_mode}.prof"
+    report_name = f"profiles/time/{load_mode}_{compression_mode}.prof"
+    Path(report_name).parent.mkdir(parents=True, exist_ok=True)
     prof = cProfile.Profile()
     prof.enable()
     run_simulation(load_mode, compression_mode)
     prof.disable()
     stats = pstats.Stats(prof)
+    stats.print_stats(r"run_simulation|particleset\.py:\d+\(execute\)")
     stats.dump_stats(report_name)
 
 
