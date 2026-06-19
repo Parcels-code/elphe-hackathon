@@ -1,8 +1,11 @@
-import parcels
 import argparse
+import cProfile
+import pstats
 
 import xarray as xr
 import numpy as np
+
+import parcels
 
 try:
     import zarr
@@ -10,6 +13,16 @@ try:
 except ImportError:
     zarr = None
     CacheStore = None
+
+
+def profile_execution_time(load_mode: str, no_compression: bool):
+    report_name = f"prof_time_{load_mode}_{'uncompressed' if no_compression else 'compressed'}.prof"
+    prof = cProfile.Profile()
+    prof.enable()
+    run_simulation(load_mode, no_compression)
+    prof.disable()
+    stats = pstats.Stats(prof)
+    stats.dump_stats(report_name)
 
 
 def run_simulation(load_mode: str, no_compression: bool) -> None:
@@ -103,4 +116,4 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    run_simulation(args.load_mode, no_compression=args.no_compression)
+    profile_execution_time(args.load_mode, no_compression=args.no_compression)
