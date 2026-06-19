@@ -2,57 +2,16 @@
 
 # cProfile Results — `raw_zarr_profiling.py`
 
-Profiles saved to `profiles/` (`zarr.prof`, `numpy.prof`, `dask.prof`, `zarr-with-cache.prof`).
-Explore interactively with `pixi run snakeviz profiles/<name>.prof`.
-
 ## `run_simulation` execution times
 
 | Mode                             | Total script time | `run_simulation` cumtime | `pset.execute` cumtime |
 | -------------------------------- | ----------------- | ------------------------ | ---------------------- |
 | **numpy**                        | 13.9s             | **5.1s**                 | 5.1s                   |
+| **parcels-v3**                   | 8.4s              | **5.6s**                 | 5.6s                   |
 | **uncompressed-zarr-with-cache** | 21.6s             | **10.8s**                | 10.6s                  |
-| **parcels-v3**                   | 15.0s             | **11.7s**                | 11.7s                  |
 | **windowed-arrays**              | 24.6s             | **16.5s**                | 16.5s                  |
 | **uncompressed-zarr**            | 34.0s             | **21.7s**                | 21.7s                  |
 | **dask**                         | 134.7s            | **123.6s**               | 123.6s                 |
 
 <!-- | **compressed-zarr-with-cache** | 52.2s | **43.6s** | 43.6s |
 | **compressed-zarr** | 62.5s | **51.7s** | 51.7s | -->
-
-Time outside `run_simulation` (loading + setup) was 8–11s across all modes — the differences are entirely within `pset.execute`.
-
-## What's eating the time inside `run_simulation`
-
-**numpy** (fastest — 4.3s): No I/O during execution. All data is already in memory. Time is pure RK4 interpolation math.
-
-**zarr / zarr-with-cache** (~45–52s in execute): Dominated by `zarr/core/buffer/cpu.py:as_numpy_array_wrapper` (~34s self time) — every interpolation step fetches chunks from the zarr store. The CacheStore saves ~8s over plain zarr (repeated chunk access hits memory rather than disk after the first read).
-
-**dask** (slowest — 138.5s): Same zarr reads (~37s) but with massive additional overhead from dask's lazy evaluation machinery per interpolation step: `_vindex_slice_and_transpose` (~27s), `_vindex_merge` (~10s), task graph execution (~4.8s), and `argsort` calls. Dask's graph construction + scheduling overhead fires on _every_ particle interpolation rather than once up-front.
-
-## Key takeaway
-
-Pre-loading into memory (`numpy` mode) is **~10–32x faster** for this workload because particle interpolation issues many small random-access reads — exactly the worst case for lazy/chunked I/O. The zarr-with-cache approach helps modestly but doesn't eliminate the per-access overhead.
-
----
-
-## Why doesn't the cache solve the problem?
-
-The `CacheStore` operates at the wrong level of abstraction. It caches the _compressed bytes_ of zarr chunks in memory. On a cache hit, it skips the disk read — but the rest of the zarr access machinery still runs in full:
-
-1. Async event loop dispatch (`asyncio._run_once`)
-2. Index computation (`indexing.py:__init__`, `chunk_grids.py:indices_to_chunks`)
-3. **Decompression + numpy conversion** (`as_numpy_array_wrapper`) — ~34s in both zarr modes
-
-`as_numpy_array_wrapper` costs ~20ms per call and fires 1,724 times regardless of cache hits, because the cache stores bytes and zarr still has to decompress + convert on every read. The zarr-with-cache profile shows nearly identical cost in that function (~33.4s vs ~34.8s for plain zarr).
-
-What you actually want is to cache already-decompressed numpy arrays — skipping the entire zarr machinery on repeated access, not just the disk I/O.
-
-## Ways forward
-
-**1. Time-slice pre-loading (best balance):** Since the simulation steps through time, parcels only ever needs 2 time slices at once (to interpolate between them). Load each pair of slices as numpy arrays before the timestep and discard the previous pair. This avoids holding the full dataset in memory (the `numpy` mode's downside) while eliminating per-read zarr overhead.
-
-**2. Numpy-level chunk cache in parcels:** Cache the output of `_get_corner_data_Agrid` as numpy arrays keyed by `(field, time_index, chunk_region)`. This skips zarr entirely on repeated spatial access within a timestep. This is the right fix for `open_raw_zarr` — the cache should conceptually live _above_ decompression, not below it.
-
-**3. Rechunk the zarr for access patterns:** Particle interpolation does many small, scattered reads. If chunks are large (e.g. full spatial slices per time step), each read pulls in more data than needed and decompression is expensive. Rechunking to smaller spatial chunks could reduce per-read cost.
-
-The cleanest fix architecturally is option 2 — a numpy-array cache inside the parcels interpolator, which is where the access pattern is actually known. The zarr store doesn't know that the same chunk will be needed 1,000 times in a single timestep; the interpolator does.
