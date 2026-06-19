@@ -2,6 +2,7 @@ import argparse
 import cProfile
 from pathlib import Path
 import pstats
+import psutil
 
 import xarray as xr
 import numpy as np
@@ -50,8 +51,13 @@ def run_simulation(load_mode: str, compression_mode: str) -> None:
                 raise ImportError("zarr or CacheStore is not available")
             source_store = zarr.storage.LocalStore(filename)
             cache_store = zarr.storage.MemoryStore()
+
+            cache_fraction = 0.25
+            max_size = int(psutil.virtual_memory().available * cache_fraction)
+            print(f"Using a cache size of {max_size / 1e9:.2f} GB")
+
             store = CacheStore(
-                store=source_store, cache_store=cache_store, max_size=2**32
+                store=source_store, cache_store=cache_store, max_size=max_size
             )
             ds = parcels.open_raw_zarr(store)
 
