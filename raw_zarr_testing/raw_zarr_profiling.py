@@ -15,36 +15,19 @@ except ImportError:
     CacheStore = None
 
 
-def profile_execution_time(load_mode: str, no_compression: bool):
-    report_name = f"prof_time_{load_mode}_{'uncompressed' if no_compression else 'compressed'}.prof"
+def profile_execution_time(load_mode: str, compression_mode: str):
+    report_name = f"prof_time_{load_mode}_{compression_mode}.prof"
     prof = cProfile.Profile()
     prof.enable()
-    run_simulation(load_mode, no_compression)
+    run_simulation(load_mode, compression_mode)
     prof.disable()
     stats = pstats.Stats(prof)
     stats.dump_stats(report_name)
 
 
-def run_simulation(load_mode: str, no_compression: bool) -> None:
-    filename = f"physics_{'uncompressed' if no_compression else 'compressed'}.zarr"
-    parcels_version = 4
-
-    if load_mode == "zarr":
-        ds = parcels.open_raw_zarr(filename)
-    elif load_mode == "numpy":
-        ds = xr.open_zarr(filename)
-        ds.load()
-    elif load_mode == "dask" or load_mode == "windowed-arrays":
-        ds = xr.open_zarr(filename)
-    elif load_mode == "zarr-with-cache":
-        if zarr is None or CacheStore is None:
-            raise ImportError("zarr or CacheStore is not available")
-        source_store = zarr.storage.LocalStore(filename)
-        cache_store = zarr.storage.MemoryStore()
-        store = CacheStore(store=source_store, cache_store=cache_store, max_size=2**32)
-        ds = parcels.open_raw_zarr(store)
-    elif load_mode == "parcels-v3":
-        parcels_version = 3
+def run_simulation(load_mode: str, compression_mode: str) -> None:
+    filename = f"physics_{compression_mode}.zarr"
+    parcels_version = 3 if load_mode == "parcels-v3" else 4
 
     N = 10_000
     X, Y = np.meshgrid(
@@ -52,6 +35,23 @@ def run_simulation(load_mode: str, no_compression: bool) -> None:
     )
 
     if parcels_version == 4:
+        if load_mode == "zarr":
+            ds = parcels.open_raw_zarr(filename)
+        elif load_mode == "numpy":
+            ds = xr.open_zarr(filename)
+            ds.load()
+        elif load_mode == "dask" or load_mode == "windowed-arrays":
+            ds = xr.open_zarr(filename)
+        elif load_mode == "zarr-with-cache":
+            if zarr is None or CacheStore is None:
+                raise ImportError("zarr or CacheStore is not available")
+            source_store = zarr.storage.LocalStore(filename)
+            cache_store = zarr.storage.MemoryStore()
+            store = CacheStore(
+                store=source_store, cache_store=cache_store, max_size=2**32
+            )
+            ds = parcels.open_raw_zarr(store)
+
         fieldset = parcels.FieldSet.from_sgrid_conventions(ds, mesh="spherical")
         if load_mode == "windowed-arrays":
             fieldset.to_windowed_arrays()
@@ -116,4 +116,5 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    profile_execution_time(args.load_mode, no_compression=args.no_compression)
+    compression_mode = "uncompressed" if args.no_compression else "compressed"
+    profile_execution_time(args.load_mode, compression_mode=compression_mode)
