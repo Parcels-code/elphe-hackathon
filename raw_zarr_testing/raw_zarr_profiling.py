@@ -52,13 +52,14 @@ def run_simulation(load_mode: str, no_compression: bool) -> None:
         )
         kernel = parcels.kernels.AdvectionRK4
     elif parcels_version == 3:
+        files = filename.replace(".zarr", ".nc")
         dimensions = {
             "U": {"lat": "lat", "lon": "lon", "depth": "depth", "time": "time"},
             "V": {"lat": "lat", "lon": "lon", "depth": "depth", "time": "time"},
         }
         variables = {"U": "U", "V": "V"}
-        fieldset = parcels.FieldSet.from_xarray_dataset(
-            ds, dimensions=dimensions, variables=variables, mesh="spherical"
+        fieldset = parcels.FieldSet.from_netcdf(
+            files, dimensions=dimensions, variables=variables, mesh="spherical"
         )
 
         pset = parcels.ParticleSet(
