@@ -12,26 +12,25 @@ except ImportError:
     CacheStore = None
 
 
-def run_simulation(load_mode: str):
-
+def run_simulation(load_mode: str, no_compression: bool) -> None:
+    filename = f"physics_{'uncompressed' if no_compression else 'compressed'}.zarr"
     parcels_version = 4
 
     if load_mode == "zarr":
-        ds = parcels.open_raw_zarr("physics.zarr")
+        ds = parcels.open_raw_zarr(filename)
     elif load_mode == "numpy":
-        ds = xr.open_zarr("physics.zarr")
+        ds = xr.open_zarr(filename)
         ds.load()
     elif load_mode == "dask" or load_mode == "windowed-arrays":
-        ds = xr.open_zarr("physics.zarr")
+        ds = xr.open_zarr(filename)
     elif load_mode == "zarr-with-cache":
         if zarr is None or CacheStore is None:
             raise ImportError("zarr or CacheStore is not available")
-        source_store = zarr.storage.LocalStore("physics.zarr")
+        source_store = zarr.storage.LocalStore(filename)
         cache_store = zarr.storage.MemoryStore()
         store = CacheStore(store=source_store, cache_store=cache_store, max_size=2**32)
         ds = parcels.open_raw_zarr(store)
     elif load_mode == "parcels-v3":
-        ds = xr.open_dataset("physics.nc")
         parcels_version = 3
 
     N = 10_000
@@ -47,7 +46,7 @@ def run_simulation(load_mode: str):
             fieldset=fieldset, lon=X, lat=Y, z=10 * np.ones_like(X)
         )
         pfile = parcels.ParticleFile(
-            "profiling.parquet",
+            "output_profiling.parquet",
             outputdt=np.timedelta64(2, "h"),
             mode="w",
         )
@@ -66,7 +65,7 @@ def run_simulation(load_mode: str):
             fieldset=fieldset, lon=X, lat=Y, depth=10 * np.ones_like(X)
         )
         pfile = parcels.ParticleFile(
-            "profiling.zarr",
+            "output_profiling.zarr",
             pset,
             outputdt=np.timedelta64(2, "h"),
         )
@@ -95,6 +94,12 @@ if __name__ == "__main__":
         default="zarr",
         help="How to open physics.zarr for the simulation.",
     )
+    parser.add_argument(
+        "--no-compression",
+        action="store_true",
+        default=False,
+        help="Whether to load files without compression.",
+    )
     args = parser.parse_args()
 
-    run_simulation(args.load_mode)
+    run_simulation(args.load_mode, no_compression=args.no_compression)

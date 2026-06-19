@@ -64,9 +64,11 @@ def download_data(no_compression: bool, **copernicus_kwargs) -> dict[str, xr.Dat
             encoding = {
                 v: {"compressors": None} for v in list(ds.data_vars) + list(ds.coords)
             }
-            ds.drop_encoding().to_zarr(f"{name}.zarr", mode="w", encoding=encoding)
+            ds.drop_encoding().to_zarr(
+                f"{name}_uncompressed.zarr", mode="w", encoding=encoding
+            )
         else:
-            ds.drop_encoding().to_zarr(f"{name}.zarr", mode="w")
+            ds.drop_encoding().to_zarr(f"{name}_compressed.zarr", mode="w")
 
 
 if __name__ == "__main__":
