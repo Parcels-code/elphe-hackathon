@@ -21,7 +21,7 @@ DATASET_IDs_BY_GRID: list[tuple[str, Grid]] = [
 DATASET_IDs: list[str] = [list(ids) for ids in DATASET_IDs_BY_GRID]
 
 
-def download_data(no_compression: bool, **copernicus_kwargs) -> dict[str, xr.Dataset]:
+def download_data(file_type: str = "zarr", **copernicus_kwargs):
     copernicus_kwargs = (
         dict(
             minimum_longitude=-100,
@@ -60,24 +60,26 @@ def download_data(no_compression: bool, **copernicus_kwargs) -> dict[str, xr.Dat
         )
 
     for name, ds in datasets.items():
-        if no_compression:
+        if file_type == "zarr_nocompression":
             encoding = {
                 v: {"compressors": None} for v in list(ds.data_vars) + list(ds.coords)
             }
             ds.drop_encoding().to_zarr(
                 f"{name}_uncompressed.zarr", mode="w", encoding=encoding
             )
-        else:
+        elif file_type == "zarr":
             ds.drop_encoding().to_zarr(f"{name}_compressed.zarr", mode="w")
+        elif file_type == "netcdf":
+            ds.to_netcdf(f"{name}_compressed.nc", mode="w")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--no-compression",
-        action="store_true",
-        default=False,
-        help="Whether to disable compression when saving the zarr files.",
+        "--file-type",
+        choices=["zarr", "zarr_nocompression", "netcdf"],
+        default="zarr",
+        help="The file type to save the datasets as.",
     )
     args = parser.parse_args()
-    download_data(no_compression=args.no_compression)
+    download_data(file_type=args.file_type)
