@@ -64,9 +64,7 @@ def run_simulation(load_mode: str, compression_mode: str) -> None:
         fieldset = parcels.FieldSet.from_sgrid_conventions(ds, mesh="spherical")
         if load_mode == "windowed-arrays":
             fieldset.to_windowed_arrays()
-        pset = parcels.ParticleSet(
-            fieldset=fieldset, lon=X, lat=Y, z=10 * np.ones_like(X)
-        )
+        pset = parcels.ParticleSet(fieldset=fieldset, x=X, y=Y, z=10 * np.ones_like(X))
         pfile = parcels.ParticleFile(
             "output_profiling.parquet",
             outputdt=np.timedelta64(2, "h"),
